@@ -283,8 +283,32 @@
     margin-bottom: 16px;
     padding-bottom: 8px;
     border-bottom: 1px dotted var(--rule);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
   }
   .results-meta b { color: var(--accent); font-weight: 500; }
+  .download-btn {
+    border: 1px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+    flex-shrink: 0;
+  }
+  .download-btn:hover {
+    background: var(--accent);
+    color: var(--paper);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 0 var(--rule);
+  }
 
   .results { display: flex; flex-direction: column; gap: 0; }
 
@@ -1526,27 +1550,17 @@ function canTileGraphemes(word, set) {
   return reachable[n] === 1;
 }
 
-function doPicker() {
-  const meta = document.getElementById('pick-meta');
-  const out = document.getElementById('pick-results');
-  const mode = document.getElementById('pick-mode').value;     // 'all' | 'only'
-  const target = document.getElementById('pick-target').value; // 'phoneme' | 'grapheme' | 'both'
-
+// Run the picker search. limit=Infinity returns all matches; finite limit early-exits.
+// Returns { results, mode, target, usePh, useGr } or null if no constraints set.
+function pickerMatches(limit = Infinity) {
+  const mode = document.getElementById('pick-mode').value;
+  const target = document.getElementById('pick-target').value;
   const usePh = (target === 'phoneme' || target === 'both') && picked.phonemes.size > 0;
   const useGr = (target === 'grapheme' || target === 'both') && picked.graphemes.size > 0;
-
-  if (!usePh && !useGr) {
-    meta.style.display = 'none';
-    out.innerHTML = '<div class="empty">select some sounds or letters above to begin</div>';
-    return;
-  }
+  if (!usePh && !useGr) return null;
 
   const results = [];
-  const MAX = 200;
-
   for (const w of WORDS_SORTED) {
-    // Words may have apostrophes and hyphens; for grapheme tiling we work on letters only.
-    // Skip empties / very short cruft.
     if (!w) continue;
     const cleanWord = w.toLowerCase();
 
@@ -1558,8 +1572,7 @@ function doPicker() {
           if (!cleanWord.includes(g)) { ok = false; break; }
         }
         if (!ok) continue;
-      } else { // 'only'
-        // Strip non-letters for tiling; if word is all non-letters skip
+      } else {
         const lettersOnly = cleanWord.replace(/[^a-z]/g, '');
         if (!lettersOnly) continue;
         if (!canTileGraphemes(lettersOnly, picked.graphemes)) continue;
@@ -1579,7 +1592,6 @@ function doPicker() {
           }
           if (allFound) { anyOk = true; break; }
         } else {
-          // 'only': every phoneme in this pronunciation must be in the picked set
           let allIn = true;
           for (const ph of phs) {
             if (!picked.phonemes.has(ph)) { allIn = false; break; }
@@ -1591,15 +1603,35 @@ function doPicker() {
     }
 
     results.push(w);
-    if (results.length >= MAX + 1) break;
+    if (results.length >= limit) break;
+  }
+  return { results, mode, target, usePh, useGr };
+}
+
+function doPicker() {
+  const meta = document.getElementById('pick-meta');
+  const out = document.getElementById('pick-results');
+  const MAX = 200;
+
+  // We ask for one more than the cap so we can show "...and more"
+  const r = pickerMatches(MAX + 1);
+  if (!r) {
+    meta.style.display = 'none';
+    out.innerHTML = '<div class="empty">select some sounds or letters above to begin</div>';
+    return;
   }
 
+  const { results, mode, usePh, useGr } = r;
   meta.style.display = 'block';
   const parts = [];
   if (usePh) parts.push(`${picked.phonemes.size} phoneme${picked.phonemes.size>1?'s':''}`);
   if (useGr) parts.push(`${picked.graphemes.size} grapheme${picked.graphemes.size>1?'s':''}`);
   const modeText = mode === 'all' ? 'including all of' : 'built only from';
-  meta.innerHTML = `Found <b>${results.length > MAX ? MAX + '+' : results.length}</b> word${results.length===1?'':'s'} ${modeText} ${parts.join(' &amp; ')}.`;
+  const countText = results.length > MAX ? `${MAX}+` : results.length;
+  const downloadBtn = results.length > 0
+    ? `<button class="download-btn" id="pick-download" title="Download all matches as JSON">↓ JSON</button>`
+    : '';
+  meta.innerHTML = `<span>Found <b>${countText}</b> word${results.length===1?'':'s'} ${modeText} ${parts.join(' &amp; ')}.</span>${downloadBtn}`;
 
   if (results.length === 0) {
     out.innerHTML = '<div class="empty">no words match this combination</div>';
@@ -1610,8 +1642,71 @@ function doPicker() {
     renderWordCard(w, DICT.get(w))
   ).join('');
   if (results.length > MAX) {
-    out.innerHTML += `<div class="empty">...and more (showing first ${MAX})</div>`;
+    out.innerHTML += `<div class="empty">…and more — use the JSON download for the full list</div>`;
   }
+
+  // Wire the download button (re-rendered each time)
+  const dl = document.getElementById('pick-download');
+  if (dl) dl.addEventListener('click', downloadPickerJSON);
+}
+
+// Build a JSON payload of ALL matching words and trigger a download
+function downloadPickerJSON() {
+  const r = pickerMatches(Infinity);
+  if (!r || r.results.length === 0) return;
+
+  const payload = {
+    source: 'Lexical Soundings — phoneme & grapheme picker',
+    generated: new Date().toISOString(),
+    variant: variant,
+    dictionary: V.sourceLabel,
+    query: {
+      mode: r.mode,                                // 'all' | 'only'
+      target: r.target,                            // 'phoneme' | 'grapheme' | 'both'
+      phonemes: Array.from(picked.phonemes),
+      graphemes: Array.from(picked.graphemes),
+    },
+    count: r.results.length,
+    words: r.results.map(w => {
+      const prons = DICT.get(w);
+      return {
+        word: w,
+        // Native pronunciations: ARPAbet for US, IPA for UK (with stress marks intact)
+        pronunciations: prons,
+        // Always include an IPA rendering for portability (US words get translated)
+        ipa: prons.map(pronToIPA),
+      };
+    }),
+  };
+
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lexical-soundings-${variant}-${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// Convert a stored pronunciation to IPA regardless of the source variant.
+function pronToIPA(pron) {
+  const tokens = pron.split(' ');
+  if (variant === 'us') {
+    // ARPAbet → IPA, preserve stress as ˈ/ˌ prefix on vowel
+    return tokens.map(tok => {
+      const m = tok.match(/[0-9]$/);
+      const stress = m ? m[0] : null;
+      const base = stress ? tok.slice(0, -1) : tok;
+      const ipa = ARPA_TO_IPA[base] || base;
+      return stress === '1' ? 'ˈ' + ipa : stress === '2' ? 'ˌ' + ipa : ipa;
+    }).join('');
+  }
+  // UK: already IPA
+  return tokens.join('');
 }
 
 // =====================================================
