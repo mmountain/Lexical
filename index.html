@@ -312,59 +312,111 @@
 
   .results { display: flex; flex-direction: column; gap: 0; }
 
-  /* WORD CARD */
-  .word-card {
-    padding: 24px 0;
+  /* COMPARISON TABLE ROWS */
+  .word-row {
+    padding: 16px 14px;
     border-bottom: 1px solid var(--paper-deep);
     display: grid;
-    grid-template-columns: minmax(200px, 1fr) 2fr;
-    gap: 32px;
+    grid-template-columns: minmax(140px, 1fr) minmax(180px, 1.5fr) minmax(180px, 1.5fr);
+    gap: 24px;
     align-items: baseline;
+    transition: background 0.12s;
   }
-  .word-card:last-child { border-bottom: 0; }
-  .word-card .word {
+  .word-row:last-child { border-bottom: 0; }
+  .word-row.word-head {
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--rule);
+    align-items: center;
+  }
+  .word-row.word-head > div {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .word-row.word-head .head-source {
     font-family: 'Fraunces', serif;
-    font-size: 32px;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-left: 6px;
+  }
+  /* State backgrounds */
+  .word-row.state-differ {
+    background: rgba(240, 198, 116, 0.18);   /* soft highlight */
+  }
+  .word-row.state-differ:hover { background: rgba(240, 198, 116, 0.28); }
+  .word-row.state-us-only,
+  .word-row.state-uk-only {
+    background: rgba(184, 65, 42, 0.05);     /* very soft accent tint */
+  }
+  .word-row.state-match:hover {
+    background: rgba(28, 26, 23, 0.025);
+  }
+
+  .cell-word {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
     font-weight: 400;
-    line-height: 1.1;
+    line-height: 1.15;
     letter-spacing: -0.01em;
     word-break: break-word;
   }
-  .word-card .word .hl {
+  .cell-word .hl {
     background: var(--highlight);
     padding: 0 2px;
   }
-  .word-card .pron-list {
+  .word-row.state-differ .cell-word::after {
+    content: '≠';
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 14px;
+    color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    vertical-align: middle;
+    font-weight: 700;
+  }
+  .cell-pron {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
-  .word-card .pron-row {
+  .cell-empty {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 13px;
+  }
+  .pron-row {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 8px;
     flex-wrap: wrap;
   }
-  .word-card .pron-tag {
+  .pron-tag {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.1em;
     color: var(--ink-faint);
     border: 1px solid var(--ink-faint);
-    padding: 1px 5px;
+    padding: 1px 4px;
     flex-shrink: 0;
+    border-radius: 2px;
   }
   .pron {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 16px;
+    font-size: 15px;
     color: var(--ink);
     letter-spacing: 0.02em;
     word-break: break-word;
+    line-height: 1.4;
   }
   .pron .ph {
     display: inline-block;
-    padding: 1px 4px;
+    padding: 1px 3px;
     margin: 0 1px;
     border-radius: 2px;
     transition: background 0.15s;
@@ -375,8 +427,37 @@
   }
   .pron .stress-1 { color: var(--accent); font-weight: 700; }
   .pron .stress-2 { color: var(--accent-soft); }
+  .hint-note {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-left: 10px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
 
-  /* MAPPER */
+  @media (max-width: 720px) {
+    .word-row {
+      grid-template-columns: 1fr;
+      gap: 8px;
+      padding: 14px 12px;
+    }
+    .word-row.word-head { display: none; }
+    .cell-pron::before {
+      content: attr(data-label);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 2px;
+    }
+    .cell-us::before { content: '🇺🇸 US (CMUdict)'; }
+    .cell-uk::before { content: '🇬🇧 UK (Britfone)'; }
+  }
+
+  /* MAPPER (legacy, no longer used) */
   .mapper {
     margin-top: 12px;
     padding: 14px 16px;
@@ -443,30 +524,42 @@
   .palettes {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: 16px;
     margin-bottom: 32px;
   }
   @media (max-width: 720px) {
     .palettes { grid-template-columns: 1fr; }
   }
+  .palette.palette-wide { grid-column: 1 / -1; }
   .palette {
     background: var(--paper-deep);
     border: 1px solid var(--rule);
-    padding: 18px 20px;
+    padding: 16px 18px;
   }
   .palette-head {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 14px;
-    padding-bottom: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
     border-bottom: 1px dotted var(--rule);
+    gap: 12px;
+    flex-wrap: wrap;
   }
   .palette-title {
     font-family: 'Fraunces', serif;
     font-style: italic;
-    font-size: 18px;
+    font-size: 17px;
     color: var(--ink);
+  }
+  .palette-source {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-left: 6px;
   }
   .palette-count {
     font-family: 'JetBrains Mono', monospace;
@@ -520,6 +613,56 @@
     background: var(--accent);
     transform: translateY(-1px);
   }
+  /* Mirror-only chips: visually selected but with a lighter, dashed look —
+     they don't constrain the search, they're just there to show the cross-variant equivalent. */
+  .chip.active.mirror-only {
+    background: transparent;
+    color: var(--accent);
+    border: 1px dashed var(--accent);
+    box-shadow: none;
+  }
+  .chip.active.mirror-only .chip-sub,
+  .chip.active.mirror-only .chip-sub .alt-code {
+    color: var(--ink-soft);
+  }
+  .chip.active.mirror-only:hover {
+    background: rgba(184, 65, 42, 0.08);
+    transform: translateY(-1px);
+  }
+  /* Phoneme chips: two-line layout with primary symbol + example word */
+  .chip-ph {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: 5px 9px 6px;
+    min-width: 52px;
+  }
+  .chip-ph .chip-main {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+  .chip-ph .chip-sub {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 10px;
+    line-height: 1.1;
+    color: var(--ink-faint);
+    letter-spacing: 0;
+  }
+  .chip-ph .chip-sub .alt-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-style: normal;
+    color: var(--ink-soft);
+    margin-right: 3px;
+    font-size: 9px;
+  }
+  .chip-ph.active .chip-sub,
+  .chip-ph.active .chip-sub .alt-code {
+    color: rgba(244, 237, 224, 0.85);
+  }
+  /* Legacy hint span (still used in case anywhere old) */
   .chip .ipa-hint {
     color: var(--ink-faint);
     font-size: 11px;
@@ -543,6 +686,20 @@
     background: var(--ink);
     color: var(--paper);
     border-color: var(--ink);
+  }
+  .pick-action.pick-toggle[data-on="true"] {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+    box-shadow: 0 1px 0 var(--rule);
+  }
+  .pick-action.pick-toggle[data-on="true"]:hover {
+    background: var(--accent-soft);
+    border-color: var(--accent-soft);
+  }
+  /* Faint highlight on chips that were auto-selected as a mirror partner */
+  .chip.mirror-linked:not(.active) {
+    border-style: dashed;
   }
 
   /* PHONEME REFERENCE */
@@ -619,12 +776,7 @@
 </header>
 
 <div class="controls">
-  <span class="toggle-label">Variant</span>
-  <div class="toggle" id="variantToggle">
-    <button class="active" data-variant="us">🇺🇸 US</button>
-    <button data-variant="uk">🇬🇧 UK</button>
-  </div>
-  <span class="toggle-label" style="margin-left:12px">Notation</span>
+  <span class="toggle-label">Notation</span>
   <div class="toggle" id="notationToggle">
     <button class="active" data-mode="arpa">ARPAbet</button>
     <button data-mode="ipa">IPA</button>
@@ -708,11 +860,18 @@
 
 <!-- TAB 4: RHYME -->
 <section class="panel" id="panel-rhyme">
-  <p class="panel-intro">Rhymes are matched on the <em>rime</em> of the stressed syllable — every phoneme from the last primary-stressed vowel onward. Perfect rhymes share that whole tail; near rhymes share only the final consonant pattern.</p>
+  <p class="panel-intro">Rhymes are matched on the <em>rime</em> of the stressed syllable — every phoneme from the last primary-stressed vowel onward. Perfect rhymes share that whole tail; near rhymes share only the final consonant pattern. Because rhymes depend on accent, choose which dictionary to anchor in: <em>orange</em> has zero rhymes in either, but the rime sounds different.</p>
   <div class="input-row">
     <div class="input-group">
       <label for="rhyme-input">Word to rhyme with</label>
       <input type="text" id="rhyme-input" placeholder="e.g. orange, silver, breath" autocomplete="off" spellcheck="false">
+    </div>
+    <div class="input-group" style="max-width:140px">
+      <label for="rhyme-variant">Accent</label>
+      <select id="rhyme-variant">
+        <option value="us">🇺🇸 US</option>
+        <option value="uk">🇬🇧 UK</option>
+      </select>
     </div>
     <div class="input-group" style="max-width:200px">
       <label for="rhyme-mode">Rhyme type</label>
@@ -728,7 +887,7 @@
 
 <!-- TAB 5: PICKER -->
 <section class="panel active" id="panel-picker">
-  <p class="panel-intro">Pick a palette of sounds, letter sequences, or both — then find words that fit. <em>Must include all</em> finds words containing every selected item. <em>Built only from</em> finds words composed entirely of selected items, the way a phonics teacher checks which words a student can read given a set of taught correspondences.</p>
+  <p class="panel-intro">Select sounds and/or letter sequences from the palettes below — then see which words fit. <em>Must include all</em> finds words containing every selected item. <em>Built only from</em> finds words composed entirely of selected items, the way a phonics teacher checks which words a student can read given a set of taught correspondences. Selections in the US and UK palettes apply to those respective pronunciations.</p>
 
   <div class="input-row">
     <div class="input-group" style="max-width:240px">
@@ -738,38 +897,46 @@
         <option value="only">Built only from selected</option>
       </select>
     </div>
-    <div class="input-group" style="max-width:200px">
-      <label for="pick-target">Apply to</label>
-      <select id="pick-target">
-        <option value="phoneme">Phonemes only</option>
-        <option value="grapheme">Graphemes only</option>
-        <option value="both">Phonemes &amp; graphemes</option>
-      </select>
-    </div>
-    <div class="input-group" style="display:flex;align-items:flex-end;gap:8px;max-width:240px">
+    <div class="input-group" style="display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap">
       <button class="pick-action" id="pick-clear">Clear all</button>
-      <button class="pick-action" id="pick-vowels">Vowels only</button>
+      <button class="pick-action" id="pick-vowels-us">US vowels</button>
+      <button class="pick-action" id="pick-vowels-uk">UK vowels</button>
+      <button class="pick-action pick-toggle" id="pick-mirror" data-on="false" title="When on, selecting a phoneme also selects its closest equivalent in the other variant">🔗 Mirror US ↔ UK</button>
     </div>
   </div>
 
   <div class="palettes" id="palettes">
-    <div class="palette" id="palette-phonemes">
+    <div class="palette" id="palette-phonemes-us">
       <div class="palette-head">
-        <span class="palette-title">Phonemes</span>
-        <span class="palette-count" id="phoneme-count">0 selected</span>
+        <span class="palette-title">🇺🇸 US Phonemes <span class="palette-source">CMUdict</span></span>
+        <span class="palette-count" id="phoneme-us-count">0 selected</span>
       </div>
       <div class="palette-section">
         <div class="palette-label">Vowels</div>
-        <div class="palette-grid" id="palette-vowels"></div>
+        <div class="palette-grid" id="palette-us-vowels"></div>
       </div>
       <div class="palette-section">
         <div class="palette-label">Consonants</div>
-        <div class="palette-grid" id="palette-consonants"></div>
+        <div class="palette-grid" id="palette-us-consonants"></div>
       </div>
     </div>
-    <div class="palette" id="palette-graphemes">
+    <div class="palette" id="palette-phonemes-uk">
       <div class="palette-head">
-        <span class="palette-title">Graphemes</span>
+        <span class="palette-title">🇬🇧 UK Phonemes <span class="palette-source">Britfone (RP)</span></span>
+        <span class="palette-count" id="phoneme-uk-count">0 selected</span>
+      </div>
+      <div class="palette-section">
+        <div class="palette-label">Vowels</div>
+        <div class="palette-grid" id="palette-uk-vowels"></div>
+      </div>
+      <div class="palette-section">
+        <div class="palette-label">Consonants</div>
+        <div class="palette-grid" id="palette-uk-consonants"></div>
+      </div>
+    </div>
+    <div class="palette palette-wide" id="palette-graphemes">
+      <div class="palette-head">
+        <span class="palette-title">Graphemes <span class="palette-source">spelling, variant-independent</span></span>
         <span class="palette-count" id="grapheme-count">0 selected</span>
       </div>
       <div class="palette-section">
@@ -874,6 +1041,53 @@ const UK_CONS = [
 ];
 
 // =====================================================
+// UK IPA → closest ARPAbet equivalent (for cross-reference in chip labels).
+// Some RP phonemes (ɒ, ɛə, ɪə, ʊə) have no clean ARPAbet equivalent — left blank.
+// =====================================================
+const UK_TO_ARPA = {
+  // Vowels
+  'ɪ': 'IH', 'ɛ': 'EH', 'æ': 'AE',
+  'ɒ': '',                // RP LOT — no clean ARPA equivalent (US merges with AA/AO)
+  'ʊ': 'UH', 'ɐ': 'AH',   // RP STRUT vowel ≈ ARPA AH
+  'ə': 'AH',              // schwa
+  'i':  'IY',             // happy-tensing
+  'iː': 'IY', 'ɑː': 'AA', 'ɔː': 'AO',
+  'uː': 'UW', 'ɜː': 'ER',
+  'eɪ': 'EY', 'aɪ': 'AY', 'ɔɪ': 'OY',
+  'aʊ': 'AW', 'əʊ': 'OW',
+  'ɪə': '',               // NEAR — rhotic in ARPA, no clean equivalent
+  'ɛə': '',               // SQUARE — rhotic in ARPA
+  'ʊə': '',               // CURE — rhotic in ARPA
+  // Consonants — all map cleanly
+  'p': 'P', 'b': 'B', 't': 'T', 'd': 'D',
+  'k': 'K', 'g': 'G', 'tʃ': 'CH', 'dʒ': 'JH',
+  'f': 'F', 'v': 'V', 'θ': 'TH', 'ð': 'DH',
+  's': 'S', 'z': 'Z', 'ʃ': 'SH', 'ʒ': 'ZH',
+  'h': 'HH', 'm': 'M', 'n': 'N', 'ŋ': 'NG',
+  'l': 'L', 'ɹ': 'R', 'j': 'Y', 'w': 'W',
+};
+
+// ARPAbet → closest UK (Britfone) equivalent for the mirror feature.
+// Only includes phonemes with a clean cross-variant correspondence.
+// AH is conventionally /ʌ/ when stressed and /ə/ when unstressed; we pick ɐ as
+// the closest cardinal RP value (Britfone's STRUT phoneme), since chip selection
+// has no stress context.
+const ARPA_TO_UK = {
+  // Vowels
+  'AA': 'ɑː', 'AE': 'æ',  'AH': 'ɐ',  'AO': 'ɔː',
+  'AW': 'aʊ', 'AY': 'aɪ', 'EH': 'ɛ',  'ER': 'ɜː',
+  'EY': 'eɪ', 'IH': 'ɪ',  'IY': 'iː', 'OW': 'əʊ',
+  'OY': 'ɔɪ', 'UH': 'ʊ',  'UW': 'uː',
+  // Consonants
+  'B': 'b', 'CH': 'tʃ', 'D': 'd', 'DH': 'ð',
+  'F': 'f', 'G': 'g', 'HH': 'h', 'JH': 'dʒ',
+  'K': 'k', 'L': 'l', 'M': 'm', 'N': 'n', 'NG': 'ŋ',
+  'P': 'p', 'R': 'ɹ', 'S': 's', 'SH': 'ʃ',
+  'T': 't', 'TH': 'θ', 'V': 'v', 'W': 'w',
+  'Y': 'j', 'Z': 'z', 'ZH': 'ʒ',
+};
+
+// =====================================================
 // Variant abstraction
 // =====================================================
 const VARIANTS = {
@@ -927,8 +1141,8 @@ const VARIANTS = {
     },
     vowels: UK_VOWELS.map(v => v[0]),
     consonants: UK_CONS.map(c => c[0]),
-    chipLabel: (token, mode) => token,    // Britfone is IPA-only, no ARPAbet equivalent
-    chipHint:  (token, mode) => '',
+    chipLabel: (token, mode) => token,    // Britfone is IPA-only
+    chipHint:  (token, mode) => UK_TO_ARPA[token] || '',  // closest ARPA equivalent (blank for RP-only phonemes)
     refExamples: Object.fromEntries([...UK_VOWELS, ...UK_CONS]),
     vowelPickerSet: () => new Set(UK_VOWELS.map(v => v[0])),
   }
@@ -940,8 +1154,10 @@ const VARIANTS = {
 let variant = 'us';                 // 'us' | 'uk'
 let V = VARIANTS.us;                // shorthand for current variant config
 let DICT = null;                    // current variant's Map<word, string[]>
-let WORDS_SORTED = null;
-let REVERSE_INDEX = null;
+let WORDS_SORTED = null;            // active variant's words, sorted
+let WORDS_UNION_SORTED = null;      // union of both variants' words, sorted (for grapheme searches)
+let WORDS_INTERSECT_SORTED = null;  // words present in BOTH dicts (for queries constraining both phoneme sides)
+const REVERSE_INDEXES = { us: null, uk: null };  // per-variant reverse indexes
 const VARIANT_DATA = { us: null, uk: null };  // cached parsed dictionaries
 let notation = 'arpa';
 let showStress = true;
@@ -960,7 +1176,7 @@ async function boot() {
     status.textContent = 'decompressing UK…';
     await new Promise(r => setTimeout(r, 0));
     VARIANT_DATA.uk = decodeAndParse(UK_B64);
-    selectVariant('us');  // default
+    setupState();
     status.classList.add('ready');
     buildReference();
     wireUI();
@@ -1004,25 +1220,26 @@ function buildReverseIndex(dict, stripFn) {
   return idx;
 }
 
-// Switch the active variant. Updates DICT, WORDS_SORTED, REVERSE_INDEX, V, notation.
-function selectVariant(v) {
-  variant = v;
-  V = VARIANTS[v];
-  DICT = VARIANT_DATA[v];
+// Set up state with both dictionaries always available.
+// `variant`, `V`, `DICT`, `WORDS_SORTED` are kept defined as 'us' defaults
+// for legacy code paths, but they no longer reflect a user-facing toggle.
+function setupState() {
+  variant = 'us';
+  V = VARIANTS.us;
+  DICT = VARIANT_DATA.us;
   WORDS_SORTED = Array.from(DICT.keys()).sort();
-  REVERSE_INDEX = buildReverseIndex(DICT, V.stripStress);
-  // If this variant doesn't support the current notation, switch
-  if (!V.notationModes.includes(notation)) notation = V.defaultNotation;
-  // Update notation toggle disabled state
-  document.querySelectorAll('#notationToggle button').forEach(btn => {
-    const m = btn.dataset.mode;
-    btn.disabled = !V.notationModes.includes(m);
-    btn.classList.toggle('disabled', btn.disabled);
-    btn.classList.toggle('active', m === notation);
-  });
-  // Update status line
+  // Union and intersection
+  const union = new Set([...VARIANT_DATA.us.keys(), ...VARIANT_DATA.uk.keys()]);
+  WORDS_UNION_SORTED = Array.from(union).sort();
+  const usSet = new Set(VARIANT_DATA.us.keys());
+  WORDS_INTERSECT_SORTED = Array.from(VARIANT_DATA.uk.keys())
+    .filter(w => usSet.has(w))
+    .sort();
+  REVERSE_INDEXES.us = buildReverseIndex(VARIANT_DATA.us, VARIANTS.us.stripStress);
+  REVERSE_INDEXES.uk = buildReverseIndex(VARIANT_DATA.uk, VARIANTS.uk.stripStress);
+  // Status line shows both dictionary sizes
   const status = document.getElementById('status');
-  status.textContent = `${DICT.size.toLocaleString()} ${V.name} words · ${V.sourceLabel}`;
+  status.textContent = `${VARIANT_DATA.us.size.toLocaleString()} 🇺🇸 · ${VARIANT_DATA.uk.size.toLocaleString()} 🇬🇧 ready`;
 }
 
 // =====================================================
@@ -1084,31 +1301,104 @@ function escapeHtml(s) {
   return s.replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 
-function renderWordCard(word, prons, opts = {}) {
+function renderTableHeader() {
+  return `<div class="word-row word-head">
+    <div class="cell-word">Word</div>
+    <div class="cell-pron">🇺🇸 US <span class="head-source">CMUdict</span></div>
+    <div class="cell-pron">🇬🇧 UK <span class="head-source">Britfone</span></div>
+  </div>`;
+}
+
+function renderWordCard(word, _ignored, opts = {}) {
+  // _ignored kept for backwards compat with old call sites that passed `prons`;
+  // we now look up US and UK directly from the loaded dictionaries.
   const wordHtml = opts.highlightWord
     ? highlightSpan(word, opts.highlightWord.pattern, opts.highlightWord.mode)
     : escapeHtml(word);
 
-  let pronListHtml;
-  const showLabel = prons.length > 1;
-  pronListHtml = prons.map((p, i) => {
-    const matchIndices = opts.phonemeMatch ? findPhonemeMatch(p, opts.phonemeMatch.tokens, opts.phonemeMatch.mode) : null;
-    const pronHtml = renderPron(p, { matchIndices });
-    const tag = showLabel ? `<span class="pron-tag">var ${i+1}</span>` : '';
-    return `<div class="pron-row">${tag}<span class="pron">${pronHtml}</span></div>`;
-  }).join('');
+  const usProns = VARIANT_DATA.us.get(word);
+  const ukProns = VARIANT_DATA.uk.get(word);
 
-  // Mapper: align graphemes to phonemes (only for the FIRST pronunciation, only on lookup tab)
-  let mapperHtml = '';
+  // Determine row state for highlight
+  let state;
+  if (usProns && ukProns) {
+    state = pronsMatchAcrossVariants(usProns, ukProns) ? 'match' : 'differ';
+  } else if (usProns) state = 'us-only';
+  else if (ukProns) state = 'uk-only';
+  else state = 'missing';
+
+  // Phoneme highlighting only applies to the column matching the searched variant
+  const matchV = opts.phonemeMatch ? opts.phonemeMatch.variant : null;
+  const usHtml = usProns
+    ? renderProns(usProns, 'us', null, matchV === 'us' ? opts.phonemeMatch : null)
+    : `<span class="cell-empty">— not in CMUdict —</span>`;
+  const ukHtml = ukProns
+    ? renderProns(ukProns, 'uk', null, matchV === 'uk' ? opts.phonemeMatch : null)
+    : `<span class="cell-empty">— not in Britfone —</span>`;
 
   return `
-    <div class="word-card">
-      <div class="word">${wordHtml}</div>
-      <div>
-        <div class="pron-list">${pronListHtml}</div>
-        ${mapperHtml}
-      </div>
+    <div class="word-row state-${state}">
+      <div class="cell-word">${wordHtml}</div>
+      <div class="cell-pron cell-us">${usHtml}</div>
+      <div class="cell-pron cell-uk">${ukHtml}</div>
     </div>`;
+}
+
+// Render a list of pronunciations for a given variant (us|uk).
+// Uses the variant's own renderToken so each side is shown in its proper notation.
+function renderProns(prons, varName, _unused, phonemeMatch) {
+  const Vlocal = VARIANTS[varName];
+  const showLabel = prons.length > 1;
+  return prons.map((p, i) => {
+    const tokens = p.split(' ');
+    let matchIndices = null;
+    if (phonemeMatch) {
+      const stripped = tokens.map(Vlocal.stripStress);
+      matchIndices = findMatchIndicesIn(stripped, phonemeMatch.tokens, phonemeMatch.mode);
+    }
+    const matchSet = matchIndices ? new Set(matchIndices) : null;
+    const phHtml = tokens.map((tok, idx) => {
+      const display = Vlocal.renderToken(tok, varName === 'us' ? notation : 'ipa', showStress);
+      const stress = Vlocal.stressOf(tok);
+      let cls = 'ph';
+      if (matchSet && matchSet.has(idx)) cls += ' match';
+      if (showStress && stress === '1') cls += ' stress-1';
+      else if (showStress && stress === '2') cls += ' stress-2';
+      return `<span class="${cls}">${display}</span>`;
+    }).join((varName === 'us' && notation === 'arpa') ? ' ' : '');
+    const tag = showLabel ? `<span class="pron-tag">${i+1}</span>` : '';
+    return `<div class="pron-row">${tag}<span class="pron">${phHtml}</span></div>`;
+  }).join('');
+}
+
+// Generic version of findPhonemeMatch that takes a pre-stripped token list.
+function findMatchIndicesIn(strippedTokens, queryTokens, mode) {
+  const indices = [];
+  if (mode === 'starts') {
+    for (let i = 0; i < queryTokens.length && i < strippedTokens.length; i++) {
+      if (strippedTokens[i] === queryTokens[i]) indices.push(i);
+      else break;
+    }
+  } else if (mode === 'ends') {
+    const off = strippedTokens.length - queryTokens.length;
+    if (off >= 0) {
+      for (let i = 0; i < queryTokens.length; i++) {
+        if (strippedTokens[off + i] === queryTokens[i]) indices.push(off + i);
+      }
+    }
+  } else {
+    for (let s = 0; s + queryTokens.length <= strippedTokens.length; s++) {
+      let ok = true;
+      for (let i = 0; i < queryTokens.length; i++) {
+        if (strippedTokens[s + i] !== queryTokens[i]) { ok = false; break; }
+      }
+      if (ok) {
+        for (let i = 0; i < queryTokens.length; i++) indices.push(s + i);
+        break;
+      }
+    }
+  }
+  return indices;
 }
 
 function findPhonemeMatch(pron, tokens, mode) {
@@ -1143,27 +1433,38 @@ function findPhonemeMatch(pron, tokens, mode) {
   return indices;
 }
 
-// =====================================================
-// Phoneme input parsing (accepts ARPAbet OR IPA, variant-aware)
-// Returns tokens in the variant's NATIVE form (ARPAbet for US, IPA for UK).
-// =====================================================
+// Phoneme input parsing — auto-detect variant from input characters.
+// Returns { variant, tokens } where variant is 'us' (ARPAbet input) or 'uk' (IPA input).
+// IPA input that uses RP-only phonemes (ɒ, ɐ, ɛə, ɪə, ʊə, ɜː, ɑː, ɔː, etc.) → 'uk'.
+// IPA input using only US-compatible phonemes → 'us' (translated to ARPAbet).
+// Plain ARPAbet input → 'us'.
 function parsePhonemeInput(input) {
   const trimmed = input.trim();
-  if (!trimmed) return [];
+  if (!trimmed) return { variant: 'us', tokens: [] };
 
-  if (variant === 'us') {
-    // US: try ARPAbet first, fall back to IPA
-    const looksIPA = /[ɑæʌɔɛɝɪʊɹθðʃʒŋɡəɚ]/.test(trimmed);
-    if (looksIPA || notation === 'ipa') {
-      return tokenizeIPA_US(trimmed);
-    }
-    return trimmed.toUpperCase().split(/\s+/)
-      .map(t => stripStress(t))
-      .filter(t => t in ARPA_TO_IPA);
-  } else {
-    // UK: input is IPA; tokenize against UK inventory
-    return tokenizeIPA_UK(trimmed);
+  // Heuristic: contains uppercase ASCII Latin letters → ARPAbet (US)
+  const hasUppercaseAscii = /[A-Z]/.test(trimmed);
+  if (hasUppercaseAscii) {
+    return {
+      variant: 'us',
+      tokens: trimmed.toUpperCase().split(/\s+/)
+        .map(t => t.replace(/[0-9]/g, ''))
+        .filter(t => t in ARPA_TO_IPA),
+    };
   }
+
+  // IPA input — check for RP-only markers
+  // ɒ, ɐ, length marks (ː), RP diphthongs ɛə/ɪə/ʊə → definitely UK
+  // əʊ (vs US oʊ) → UK
+  // word-final bare ə without rhotic (e.g. "fˈeɪvə") → UK (US would have ɝ)
+  const looksUK =
+    /[ɒɐ]|ː|ɛə|ɪə|ʊə|əʊ/.test(trimmed)
+    || /ə\s*$/.test(trimmed);  // trailing bare schwa → RP-style
+  if (looksUK) {
+    return { variant: 'uk', tokens: tokenizeIPA_UK(trimmed) };
+  }
+  // Otherwise treat as US-IPA and translate to ARPAbet
+  return { variant: 'us', tokens: tokenizeIPA_US(trimmed) };
 }
 
 // US: IPA → ARPAbet tokens
@@ -1230,17 +1531,28 @@ function doLookup(query) {
   const q = query.trim().toLowerCase();
   if (!q) { meta.style.display = 'none'; out.innerHTML = ''; return; }
 
-  if (DICT.has(q)) {
-    const prons = DICT.get(q);
+  const inUS = VARIANT_DATA.us.has(q);
+  const inUK = VARIANT_DATA.uk.has(q);
+
+  if (inUS || inUK) {
     meta.style.display = 'block';
-    meta.innerHTML = `Entry found. <b>${prons.length}</b> pronunciation${prons.length>1?'s':''} on record.`;
-    out.innerHTML = renderWordCard(q, prons);
+    if (inUS && inUK) {
+      const same = pronsMatchAcrossVariants(VARIANT_DATA.us.get(q), VARIANT_DATA.uk.get(q));
+      meta.innerHTML = same
+        ? `Found in both dictionaries — pronounced <b>the same</b>.`
+        : `Found in both dictionaries — <b>pronounced differently</b>.`;
+    } else if (inUS) {
+      meta.innerHTML = `Found in <b>CMUdict</b> only. Not in Britfone (likely outside the BNC top-15k).`;
+    } else {
+      meta.innerHTML = `Found in <b>Britfone</b> only. Not in CMUdict.`;
+    }
+    out.innerHTML = renderTableHeader() + renderWordCard(q);
     return;
   }
 
-  // Not found — suggest prefix matches
+  // Not in either — suggest prefix matches from the union
   const suggestions = [];
-  for (const w of WORDS_SORTED) {
+  for (const w of WORDS_UNION_SORTED) {
     if (w.startsWith(q)) {
       suggestions.push(w);
       if (suggestions.length >= 12) break;
@@ -1248,12 +1560,12 @@ function doLookup(query) {
   }
   meta.style.display = 'block';
   if (suggestions.length === 0) {
-    meta.innerHTML = `No entry for <b>${escapeHtml(q)}</b>. The CMU dictionary doesn't include this word.`;
+    meta.innerHTML = `No entry for <b>${escapeHtml(q)}</b> in either dictionary.`;
     out.innerHTML = '<div class="empty">try a different spelling, or check the pattern tab</div>';
   } else {
     meta.innerHTML = `No exact entry for <b>${escapeHtml(q)}</b>. Showing words that start with it.`;
-    out.innerHTML = suggestions.map(w =>
-      renderWordCard(w, DICT.get(w), { highlightWord: { pattern: q, mode: 'starts' } })
+    out.innerHTML = renderTableHeader() + suggestions.map(w =>
+      renderWordCard(w, null, { highlightWord: { pattern: q, mode: 'starts' } })
     ).join('');
   }
 }
@@ -1261,17 +1573,26 @@ function doLookup(query) {
 function doSounds(query, mode) {
   const meta = document.getElementById('sounds-meta');
   const out = document.getElementById('sounds-results');
-  const tokens = parsePhonemeInput(query);
+  const parsed = parsePhonemeInput(query);
+  const { variant: detectedV, tokens } = parsed;
   if (tokens.length === 0) { meta.style.display = 'none'; out.innerHTML = ''; return; }
 
-  // Always match against stress-stripped reverse index
+  // Use the reverse index for the detected variant
+  const idx = REVERSE_INDEXES[detectedV];
   const key = tokens.join(' ');
-  const matches = REVERSE_INDEX.get(key) || [];
+  const matches = idx.get(key) || [];
+
+  // Render token list using the appropriate variant's notation
+  const tokDisplay = detectedV === 'us'
+    ? (notation === 'ipa' ? tokens.map(t => ARPA_TO_IPA[t] || t).join('') : tokens.join(' '))
+    : tokens.join('');
+  const flag = detectedV === 'us' ? '🇺🇸' : '🇬🇧';
+  const dictName = detectedV === 'us' ? 'CMUdict' : 'Britfone';
 
   meta.style.display = 'block';
   if (matches.length === 0) {
-    meta.innerHTML = `No words pronounced <b>/${displayTokenList(tokens)}/</b>.`;
-    out.innerHTML = '<div class="empty">try a different sequence, or relax stress matching</div>';
+    meta.innerHTML = `No words pronounced <b>/${tokDisplay}/</b> in ${flag} ${dictName}.`;
+    out.innerHTML = '<div class="empty">try a different sequence — or check the other notation</div>';
     return;
   }
 
@@ -1283,12 +1604,10 @@ function doSounds(query, mode) {
   }
   const words = Array.from(byWord.keys()).sort();
 
-  meta.innerHTML = `Found <b>${words.length}</b> word${words.length>1?'s':''} pronounced <b>/${displayTokenList(tokens)}/</b>.`;
+  meta.innerHTML = `Found <b>${words.length}</b> word${words.length>1?'s':''} pronounced <b>/${tokDisplay}/</b> in ${flag} ${dictName}. <span class="hint-note">Detected ${detectedV === 'us' ? 'ARPAbet/US-IPA' : 'UK-IPA'} input — switch notations by typing in the other style.</span>`;
 
-  // For "exact" mode: show only the matching pronunciations; for "ignore-stress" we show all variants
-  out.innerHTML = words.slice(0, 200).map(w => {
-    const prons = mode === 'exact' ? byWord.get(w) : DICT.get(w);
-    return renderWordCard(w, prons);
+  out.innerHTML = renderTableHeader() + words.slice(0, 200).map(w => {
+    return renderWordCard(w);
   }).join('');
   if (words.length > 200) {
     out.innerHTML += `<div class="empty">...and ${words.length - 200} more (showing first 200)</div>`;
@@ -1305,7 +1624,8 @@ function doPattern(target, mode, pattern) {
 
   if (target === 'grapheme') {
     const p = pattern.trim().toLowerCase();
-    for (const w of WORDS_SORTED) {
+    // Grapheme search uses union of both dicts since spelling is variant-independent
+    for (const w of WORDS_UNION_SORTED) {
       let hit = false;
       if (mode === 'starts') hit = w.startsWith(p);
       else if (mode === 'ends') hit = w.endsWith(p);
@@ -1317,23 +1637,29 @@ function doPattern(target, mode, pattern) {
     }
     meta.style.display = 'block';
     meta.innerHTML = `Found <b>${results.length > MAX ? MAX + '+' : results.length}</b> word${results.length===1?'':'s'} ${mode === 'starts' ? 'starting with' : mode === 'ends' ? 'ending with' : 'containing'} the spelling <b>${escapeHtml(p)}</b>.`;
-    out.innerHTML = results.slice(0, MAX).map(w =>
-      renderWordCard(w, DICT.get(w), { highlightWord: { pattern: p, mode } })
-    ).join('') || '<div class="empty">no matches</div>';
+    out.innerHTML = results.length
+      ? renderTableHeader() + results.slice(0, MAX).map(w =>
+          renderWordCard(w, null, { highlightWord: { pattern: p, mode } })
+        ).join('')
+      : '<div class="empty">no matches</div>';
   } else {
-    // phoneme pattern
-    const tokens = parsePhonemeInput(pattern);
+    // Phoneme pattern — auto-detect variant from input
+    const parsed = parsePhonemeInput(pattern);
+    const { variant: detV, tokens } = parsed;
     if (tokens.length === 0) {
       meta.style.display = 'block';
-      meta.innerHTML = 'Could not parse phoneme pattern. Use space-separated ARPAbet (e.g. <b>S T R</b>) or IPA (e.g. <b>str</b>).';
+      meta.innerHTML = 'Could not parse phoneme pattern.';
       out.innerHTML = '';
       return;
     }
-    for (const w of WORDS_SORTED) {
-      const prons = DICT.get(w);
+    const dict = VARIANT_DATA[detV];
+    const stripFn = VARIANTS[detV].stripStress;
+    const wordList = Array.from(dict.keys()).sort();
+    for (const w of wordList) {
+      const prons = dict.get(w);
       let hit = false;
       for (const p of prons) {
-        const stripped = stripStress(p).split(' ');
+        const stripped = stripFn(p).split(' ');
         if (mode === 'starts') {
           if (stripped.length >= tokens.length && tokens.every((t, i) => stripped[i] === t)) { hit = true; break; }
         } else if (mode === 'ends') {
@@ -1354,11 +1680,16 @@ function doPattern(target, mode, pattern) {
       }
     }
     meta.style.display = 'block';
-    const tokDisplay = displayTokenList(tokens);
-    meta.innerHTML = `Found <b>${results.length > MAX ? MAX + '+' : results.length}</b> word${results.length===1?'':'s'} with pronunciations ${mode === 'starts' ? 'starting with' : mode === 'ends' ? 'ending with' : 'containing'} <b>/${tokDisplay}/</b>.`;
-    out.innerHTML = results.slice(0, MAX).map(w =>
-      renderWordCard(w, DICT.get(w), { phonemeMatch: { tokens, mode } })
-    ).join('') || '<div class="empty">no matches</div>';
+    const tokDisplay = detV === 'us'
+      ? (notation === 'ipa' ? tokens.map(t => ARPA_TO_IPA[t] || t).join('') : tokens.join(' '))
+      : tokens.join('');
+    const flag = detV === 'us' ? '🇺🇸' : '🇬🇧';
+    meta.innerHTML = `Found <b>${results.length > MAX ? MAX + '+' : results.length}</b> word${results.length===1?'':'s'} with ${flag} pronunciations ${mode === 'starts' ? 'starting with' : mode === 'ends' ? 'ending with' : 'containing'} <b>/${tokDisplay}/</b>.`;
+    out.innerHTML = results.length
+      ? renderTableHeader() + results.slice(0, MAX).map(w =>
+          renderWordCard(w, null, { phonemeMatch: { tokens, mode, variant: detV } })
+        ).join('')
+      : '<div class="empty">no matches</div>';
   }
 }
 
@@ -1367,56 +1698,62 @@ function doRhyme(query, mode) {
   const out = document.getElementById('rhyme-results');
   const q = query.trim().toLowerCase();
   if (!q) { meta.style.display = 'none'; out.innerHTML = ''; return; }
-  if (!DICT.has(q)) {
+
+  const rv = document.getElementById('rhyme-variant').value;  // 'us' | 'uk'
+  const dict = VARIANT_DATA[rv];
+  const Vlocal = VARIANTS[rv];
+  const stripFn = Vlocal.stripStress;
+  const stressFn = Vlocal.stressOf;
+  const flag = rv === 'us' ? '🇺🇸' : '🇬🇧';
+  const dictName = rv === 'us' ? 'CMUdict' : 'Britfone';
+
+  if (!dict.has(q)) {
     meta.style.display = 'block';
-    meta.innerHTML = `No entry for <b>${escapeHtml(q)}</b> — can't determine its rhyme.`;
+    const otherDict = rv === 'us' ? VARIANT_DATA.uk : VARIANT_DATA.us;
+    if (otherDict.has(q)) {
+      meta.innerHTML = `<b>${escapeHtml(q)}</b> isn't in ${flag} ${dictName}, but it's in the other dictionary. Switch the accent above to find rhymes there.`;
+    } else {
+      meta.innerHTML = `No entry for <b>${escapeHtml(q)}</b> in either dictionary — can't determine its rhyme.`;
+    }
     out.innerHTML = '';
     return;
   }
-  const prons = DICT.get(q);
-  // Use the first pronunciation
+
+  const prons = dict.get(q);
   const pron = prons[0];
   const phs = pron.split(' ');
-  // Find last primary stress (digit 1); fall back to last vowel (any digit)
+  // Find last primary stress; fall back to last token whose stripped form differs (i.e. last vowel-bearing token)
   let stressIdx = -1;
   for (let i = phs.length - 1; i >= 0; i--) {
-    if (phs[i].endsWith('1')) { stressIdx = i; break; }
+    if (stressFn(phs[i]) === '1') { stressIdx = i; break; }
   }
   if (stressIdx < 0) {
     for (let i = phs.length - 1; i >= 0; i--) {
-      if (/[0-9]$/.test(phs[i])) { stressIdx = i; break; }
+      if (stressFn(phs[i])) { stressIdx = i; break; }
     }
   }
-  if (stressIdx < 0) {
-    meta.style.display = 'block';
-    meta.innerHTML = `<b>${escapeHtml(q)}</b> has no vowel — nothing to rhyme.`;
-    out.innerHTML = '';
-    return;
-  }
+  if (stressIdx < 0) stressIdx = Math.max(0, phs.length - 2);  // last-resort fallback
 
-  const targetTail = phs.slice(stressIdx).map(stripStress);
+  const targetTail = phs.slice(stressIdx).map(stripFn);
   const targetTailKey = targetTail.join(' ');
-  const targetFinal = phs[phs.length - 1] ? stripStress(phs[phs.length - 1]) : null;
+  const targetFinal = phs.length ? stripFn(phs[phs.length - 1]) : null;
 
   const results = [];
-  for (const [w, ps] of DICT) {
+  for (const [w, ps] of dict) {
     if (w === q) continue;
     for (const p of ps) {
       const ws = p.split(' ');
-      // Find its primary stress
       let si = -1;
-      for (let i = ws.length - 1; i >= 0; i--) if (ws[i].endsWith('1')) { si = i; break; }
-      if (si < 0) for (let i = ws.length - 1; i >= 0; i--) if (/[0-9]$/.test(ws[i])) { si = i; break; }
+      for (let i = ws.length - 1; i >= 0; i--) if (stressFn(ws[i]) === '1') { si = i; break; }
+      if (si < 0) for (let i = ws.length - 1; i >= 0; i--) if (stressFn(ws[i])) { si = i; break; }
       if (si < 0) continue;
-      const tail = ws.slice(si).map(stripStress).join(' ');
+      const tail = ws.slice(si).map(stripFn).join(' ');
 
       if (mode === 'perfect') {
         if (tail === targetTailKey) { results.push({ word: w, pron: p, score: targetTail.length }); break; }
       } else {
-        // near rhyme: share final phoneme + same rhyme length-ish
-        const finalP = stripStress(ws[ws.length - 1]);
+        const finalP = stripFn(ws[ws.length - 1]);
         if (finalP === targetFinal && tail !== targetTailKey) {
-          // count tail overlap from the end
           const a = tail.split(' '); const b = targetTail;
           let overlap = 0;
           for (let i = 1; i <= Math.min(a.length, b.length); i++) {
@@ -1432,17 +1769,20 @@ function doRhyme(query, mode) {
   results.sort((a, b) => b.score - a.score || a.word.localeCompare(b.word));
 
   meta.style.display = 'block';
-  const tailDisplay = displayTokenList(targetTail);
+  // Display the rime in the appropriate notation
+  const tailDisplay = rv === 'us'
+    ? (notation === 'ipa' ? targetTail.map(t => ARPA_TO_IPA[t] || t).join('') : targetTail.join(' '))
+    : targetTail.join('');
   if (results.length === 0) {
-    meta.innerHTML = `<b>${escapeHtml(q)}</b> has no ${mode} rhymes in the dictionary <span style="color:var(--ink-faint)">(rime: /${tailDisplay}/)</span>.`;
+    meta.innerHTML = `<b>${escapeHtml(q)}</b> has no ${mode} rhymes in ${flag} ${dictName} <span style="color:var(--ink-faint)">(rime: /${tailDisplay}/)</span>.`;
     out.innerHTML = '<div class="empty">notoriously hard. orange, silver, purple all live here.</div>';
     return;
   }
 
-  meta.innerHTML = `Found <b>${results.length}</b> ${mode} rhyme${results.length>1?'s':''} for <b>${escapeHtml(q)}</b> <span style="color:var(--ink-faint)">(rime: /${tailDisplay}/)</span>.`;
+  meta.innerHTML = `Found <b>${results.length}</b> ${mode} rhyme${results.length>1?'s':''} for <b>${escapeHtml(q)}</b> in ${flag} ${dictName} <span style="color:var(--ink-faint)">(rime: /${tailDisplay}/)</span>.`;
   const MAX = 200;
-  out.innerHTML = results.slice(0, MAX).map(r =>
-    renderWordCard(r.word, DICT.get(r.word))
+  out.innerHTML = renderTableHeader() + results.slice(0, MAX).map(r =>
+    renderWordCard(r.word)
   ).join('');
   if (results.length > MAX) {
     out.innerHTML += `<div class="empty">...and ${results.length - MAX} more</div>`;
@@ -1461,35 +1801,81 @@ const DIGRAPHS = [
   'igh','ough','augh','tion','sion','ture','dge','tch'
 ];
 
-const picked = { phonemes: new Set(), graphemes: new Set() };
+// Picker selections — three independent sets
+const picked = {
+  phonemes_us: new Set(),
+  phonemes_uk: new Set(),
+  graphemes:   new Set(),
+};
+// Mirrored selections — chips that were auto-selected as a mirror partner.
+// These appear visually selected but DO NOT constrain the search (they're for
+// cross-reference only — the user manually picked the partner on the other side).
+const mirrored = {
+  phonemes_us: new Set(),
+  phonemes_uk: new Set(),
+};
 let palettesWired = false;
 
+function pickedSetFor(kind) {
+  if (kind === 'phoneme-us') return picked.phonemes_us;
+  if (kind === 'phoneme-uk') return picked.phonemes_uk;
+  return picked.graphemes;
+}
+function mirroredSetFor(kind) {
+  if (kind === 'phoneme-us') return mirrored.phonemes_us;
+  if (kind === 'phoneme-uk') return mirrored.phonemes_uk;
+  return null;  // graphemes don't mirror
+}
+
+// Return the SEARCH-CONSTRAINING subset of a picked side: items the user picked
+// directly, excluding ones that arrived only as mirror partners.
+function constrainingSet(varName) {
+  const all = picked['phonemes_' + varName];
+  const mirr = mirrored['phonemes_' + varName];
+  if (mirr.size === 0) return all;
+  const out = new Set();
+  for (const v of all) if (!mirr.has(v)) out.add(v);
+  return out;
+}
+
+// Build inner HTML for a phoneme chip. varName: 'us' | 'uk'.
+// Top line: notation-appropriate symbol; bottom: alt-code + example.
+function phonemeChipHTML(value, varName) {
+  const Vlocal = VARIANTS[varName];
+  const useNotation = (varName === 'us') ? notation : 'ipa';
+  const main = Vlocal.chipLabel(value, useNotation);
+  const alt  = Vlocal.chipHint(value, useNotation);
+  const example = Vlocal.refExamples[value] || '';
+  const altHtml = alt ? `<span class="alt-code">${alt}</span>` : '';
+  const subHtml = (alt || example)
+    ? `<span class="chip-sub">${altHtml}${example}</span>`
+    : '';
+  const kind = `phoneme-${varName}`;
+  const active = pickedSetFor(kind).has(value) ? ' active' : '';
+  return `<button class="chip chip-ph${active}" data-kind="${kind}" data-value="${value}"><span class="chip-main">${main}</span>${subHtml}</button>`;
+}
+
+function graphemeChipHTML(value) {
+  const active = picked.graphemes.has(value) ? ' active' : '';
+  return `<button class="chip${active}" data-kind="grapheme" data-value="${value}">${value}</button>`;
+}
+
 function buildPalettes() {
-  const vowelEl = document.getElementById('palette-vowels');
-  const consEl = document.getElementById('palette-consonants');
-  const lettersEl = document.getElementById('palette-letters');
-  const digraphsEl = document.getElementById('palette-digraphs');
-
-  function makeChip(label, kind, value, hint) {
-    const hintHtml = hint ? `<span class="ipa-hint">${hint}</span>` : '';
-    const active = (kind === 'phoneme' ? picked.phonemes : picked.graphemes).has(value);
-    return `<button class="chip${active?' active':''}" data-kind="${kind}" data-value="${value}">${label}${hintHtml}</button>`;
-  }
-
-  // Phoneme chips: variant supplies the inventory and label/hint mappers
-  vowelEl.innerHTML = V.vowels.map(p =>
-    makeChip(V.chipLabel(p, notation), 'phoneme', p, V.chipHint(p, notation))
-  ).join('');
-  consEl.innerHTML = V.consonants.map(p =>
-    makeChip(V.chipLabel(p, notation), 'phoneme', p, V.chipHint(p, notation))
-  ).join('');
-  // Graphemes are language-independent (English spelling)
-  lettersEl.innerHTML = SINGLE_LETTERS.map(l =>
-    makeChip(l, 'grapheme', l, '')
-  ).join('');
-  digraphsEl.innerHTML = DIGRAPHS.map(d =>
-    makeChip(d, 'grapheme', d, '')
-  ).join('');
+  // US phoneme palette
+  document.getElementById('palette-us-vowels').innerHTML =
+    VARIANTS.us.vowels.map(p => phonemeChipHTML(p, 'us')).join('');
+  document.getElementById('palette-us-consonants').innerHTML =
+    VARIANTS.us.consonants.map(p => phonemeChipHTML(p, 'us')).join('');
+  // UK phoneme palette
+  document.getElementById('palette-uk-vowels').innerHTML =
+    VARIANTS.uk.vowels.map(p => phonemeChipHTML(p, 'uk')).join('');
+  document.getElementById('palette-uk-consonants').innerHTML =
+    VARIANTS.uk.consonants.map(p => phonemeChipHTML(p, 'uk')).join('');
+  // Grapheme palette
+  document.getElementById('palette-letters').innerHTML =
+    SINGLE_LETTERS.map(l => graphemeChipHTML(l)).join('');
+  document.getElementById('palette-digraphs').innerHTML =
+    DIGRAPHS.map(d => graphemeChipHTML(d)).join('');
 
   // Click handler — wire only once
   if (!palettesWired) {
@@ -1498,13 +1884,29 @@ function buildPalettes() {
       if (!chip) return;
       const kind = chip.dataset.kind;
       const value = chip.dataset.value;
-      const set = kind === 'phoneme' ? picked.phonemes : picked.graphemes;
-      if (set.has(value)) {
+      const set = pickedSetFor(kind);
+      const mirrSet = mirroredSetFor(kind);
+      const isCurrentlyMirrorOnly = mirrSet && mirrSet.has(value);
+
+      if (isCurrentlyMirrorOnly) {
+        // Click on a mirror-only chip → promote to manual (it now constrains)
+        promoteFromMirror(kind, value);
+        updatePickerCounts();
+        doPicker();
+        return;
+      }
+
+      const willSelect = !set.has(value);
+      if (willSelect) { set.add(value); chip.classList.add('active'); }
+      else {
         set.delete(value);
         chip.classList.remove('active');
-      } else {
-        set.add(value);
-        chip.classList.add('active');
+        // Also clear any mirror-flag on this chip (defensive)
+        if (mirrSet) { mirrSet.delete(value); chip.classList.remove('mirror-only'); }
+      }
+      // Mirror to the equivalent on the other side (only for phoneme chips)
+      if (kind === 'phoneme-us' || kind === 'phoneme-uk') {
+        applyMirror(kind, value, willSelect);
       }
       updatePickerCounts();
       doPicker();
@@ -1513,21 +1915,87 @@ function buildPalettes() {
   }
 }
 
+// Mirror state — when on, picking a phoneme on one side also picks/unpicks
+// its closest equivalent on the other side (where one exists).
+let mirrorEnabled = false;
+
+// Given a chip kind ('phoneme-us' | 'phoneme-uk') and value, return [partnerKind, partnerValue]
+// or null if no clean equivalent exists (RP-only phonemes mostly).
+function mirrorPartner(kind, value) {
+  if (kind === 'phoneme-us') {
+    const ukVal = ARPA_TO_UK[value];
+    return ukVal ? ['phoneme-uk', ukVal] : null;
+  }
+  if (kind === 'phoneme-uk') {
+    const usVal = UK_TO_ARPA[value];
+    return usVal ? ['phoneme-us', usVal] : null;
+  }
+  return null;
+}
+
+// Apply (or remove) mirror selections for a chip. select=true toggles partner ON,
+// select=false toggles partner OFF. Mirrored partners are marked in `mirrored`
+// so the search logic can ignore them as constraints (visual-only selections).
+function applyMirror(kind, value, select) {
+  if (!mirrorEnabled) return;
+  const partner = mirrorPartner(kind, value);
+  if (!partner) return;
+  const [pKind, pValue] = partner;
+  const pSet = pickedSetFor(pKind);
+  const pMirrored = mirroredSetFor(pKind);
+  if (select && !pSet.has(pValue)) {
+    pSet.add(pValue);
+    pMirrored.add(pValue);  // mark as mirror-only (doesn't constrain)
+    const el = document.querySelector(`.chip[data-kind="${pKind}"][data-value="${pValue}"]`);
+    if (el) { el.classList.add('active'); el.classList.add('mirror-only'); }
+  } else if (!select && pSet.has(pValue) && pMirrored.has(pValue)) {
+    // Only auto-remove partners that we marked as mirror-only — never undo a manual pick
+    pSet.delete(pValue);
+    pMirrored.delete(pValue);
+    const el = document.querySelector(`.chip[data-kind="${pKind}"][data-value="${pValue}"]`);
+    if (el) { el.classList.remove('active'); el.classList.remove('mirror-only'); }
+  }
+}
+
+// Promote a mirror-only selection to a manual one (user clicked the chip directly).
+function promoteFromMirror(kind, value) {
+  const m = mirroredSetFor(kind);
+  if (!m) return;
+  if (m.has(value)) {
+    m.delete(value);
+    const el = document.querySelector(`.chip[data-kind="${kind}"][data-value="${value}"]`);
+    if (el) el.classList.remove('mirror-only');
+  }
+}
+
 function refreshPaletteChips() {
-  // Sync chip visual state with picked sets (used by clear-all and shortcuts)
+  // Sync all chip visual state from picked + mirrored sets
   document.querySelectorAll('#palettes .chip').forEach(c => {
-    const set = c.dataset.kind === 'phoneme' ? picked.phonemes : picked.graphemes;
-    c.classList.toggle('active', set.has(c.dataset.value));
+    const kind = c.dataset.kind;
+    const value = c.dataset.value;
+    const set = pickedSetFor(kind);
+    const mirrSet = mirroredSetFor(kind);
+    c.classList.toggle('active', set.has(value));
+    c.classList.toggle('mirror-only', mirrSet ? mirrSet.has(value) : false);
   });
   updatePickerCounts();
 }
 
 function updatePickerCounts() {
-  const pc = document.getElementById('phoneme-count');
+  const pus = document.getElementById('phoneme-us-count');
+  const puk = document.getElementById('phoneme-uk-count');
   const gc = document.getElementById('grapheme-count');
-  pc.textContent = `${picked.phonemes.size} selected`;
+  const usManual = picked.phonemes_us.size - mirrored.phonemes_us.size;
+  const ukManual = picked.phonemes_uk.size - mirrored.phonemes_uk.size;
+  pus.textContent = mirrored.phonemes_us.size > 0
+    ? `${usManual} picked · ${mirrored.phonemes_us.size} mirrored`
+    : `${usManual} selected`;
+  puk.textContent = mirrored.phonemes_uk.size > 0
+    ? `${ukManual} picked · ${mirrored.phonemes_uk.size} mirrored`
+    : `${ukManual} selected`;
   gc.textContent = `${picked.graphemes.size} selected`;
-  pc.classList.toggle('has-selection', picked.phonemes.size > 0);
+  pus.classList.toggle('has-selection', usManual > 0);
+  puk.classList.toggle('has-selection', ukManual > 0);
   gc.classList.toggle('has-selection', picked.graphemes.size > 0);
 }
 
@@ -1551,20 +2019,57 @@ function canTileGraphemes(word, set) {
 }
 
 // Run the picker search. limit=Infinity returns all matches; finite limit early-exits.
-// Returns { results, mode, target, usePh, useGr } or null if no constraints set.
+// Returns { results, mode, useUS, useUK, useGr } or null if no constraints set.
+// Mirrored selections do NOT constrain the search — only manually picked phonemes do.
 function pickerMatches(limit = Infinity) {
   const mode = document.getElementById('pick-mode').value;
-  const target = document.getElementById('pick-target').value;
-  const usePh = (target === 'phoneme' || target === 'both') && picked.phonemes.size > 0;
-  const useGr = (target === 'grapheme' || target === 'both') && picked.graphemes.size > 0;
-  if (!usePh && !useGr) return null;
+  const constrUS = constrainingSet('us');
+  const constrUK = constrainingSet('uk');
+  const useUS = constrUS.size > 0;
+  const useUK = constrUK.size > 0;
+  const useGr = picked.graphemes.size > 0;
+  if (!useUS && !useUK && !useGr) return null;
+
+  // Word universe: if a phoneme constraint exists, words need data on that side.
+  // If both sides constrain, intersection. Otherwise the relevant single dict
+  // (or the union when only graphemes constrain).
+  let wordList;
+  if (useUS && useUK) {
+    wordList = WORDS_INTERSECT_SORTED;
+  } else if (useUS) {
+    wordList = Array.from(VARIANT_DATA.us.keys()).sort();
+  } else if (useUK) {
+    wordList = Array.from(VARIANT_DATA.uk.keys()).sort();
+  } else {
+    wordList = WORDS_UNION_SORTED;
+  }
+
+  function pronsSatisfy(prons, pickedSet, varName) {
+    const stripFn = VARIANTS[varName].stripStress;
+    for (const p of prons) {
+      const phs = stripFn(p).split(' ');
+      if (mode === 'all') {
+        let allFound = true;
+        for (const want of pickedSet) {
+          if (!phs.includes(want)) { allFound = false; break; }
+        }
+        if (allFound) return true;
+      } else {
+        let allIn = true;
+        for (const ph of phs) {
+          if (!pickedSet.has(ph)) { allIn = false; break; }
+        }
+        if (allIn) return true;
+      }
+    }
+    return false;
+  }
 
   const results = [];
-  for (const w of WORDS_SORTED) {
+  for (const w of wordList) {
     if (!w) continue;
     const cleanWord = w.toLowerCase();
 
-    // GRAPHEME constraint
     if (useGr) {
       if (mode === 'all') {
         let ok = true;
@@ -1579,33 +2084,19 @@ function pickerMatches(limit = Infinity) {
       }
     }
 
-    // PHONEME constraint — at least one pronunciation must satisfy it
-    if (usePh) {
-      const prons = DICT.get(w);
-      let anyOk = false;
-      for (const p of prons) {
-        const phs = stripStress(p).split(' ');
-        if (mode === 'all') {
-          let allFound = true;
-          for (const want of picked.phonemes) {
-            if (!phs.includes(want)) { allFound = false; break; }
-          }
-          if (allFound) { anyOk = true; break; }
-        } else {
-          let allIn = true;
-          for (const ph of phs) {
-            if (!picked.phonemes.has(ph)) { allIn = false; break; }
-          }
-          if (allIn) { anyOk = true; break; }
-        }
-      }
-      if (!anyOk) continue;
+    if (useUS) {
+      const usProns = VARIANT_DATA.us.get(w);
+      if (!usProns || !pronsSatisfy(usProns, constrUS, 'us')) continue;
+    }
+    if (useUK) {
+      const ukProns = VARIANT_DATA.uk.get(w);
+      if (!ukProns || !pronsSatisfy(ukProns, constrUK, 'uk')) continue;
     }
 
     results.push(w);
     if (results.length >= limit) break;
   }
-  return { results, mode, target, usePh, useGr };
+  return { results, mode, useUS, useUK, useGr };
 }
 
 function doPicker() {
@@ -1621,25 +2112,31 @@ function doPicker() {
     return;
   }
 
-  const { results, mode, usePh, useGr } = r;
+  const { results, mode, useUS, useUK, useGr } = r;
   meta.style.display = 'block';
   const parts = [];
-  if (usePh) parts.push(`${picked.phonemes.size} phoneme${picked.phonemes.size>1?'s':''}`);
+  if (useUS) parts.push(`${picked.phonemes_us.size} 🇺🇸 phoneme${picked.phonemes_us.size>1?'s':''}`);
+  if (useUK) parts.push(`${picked.phonemes_uk.size} 🇬🇧 phoneme${picked.phonemes_uk.size>1?'s':''}`);
   if (useGr) parts.push(`${picked.graphemes.size} grapheme${picked.graphemes.size>1?'s':''}`);
   const modeText = mode === 'all' ? 'including all of' : 'built only from';
   const countText = results.length > MAX ? `${MAX}+` : results.length;
   const downloadBtn = results.length > 0
     ? `<button class="download-btn" id="pick-download" title="Download all matches as JSON">↓ JSON</button>`
     : '';
-  meta.innerHTML = `<span>Found <b>${countText}</b> word${results.length===1?'':'s'} ${modeText} ${parts.join(' &amp; ')}.</span>${downloadBtn}`;
+  // If both US and UK phoneme constraints are active, the search is naturally restricted to
+  // the intersection of dictionaries — surface that in the message.
+  const intersectNote = (useUS && useUK)
+    ? ` <span class="hint-note">searching words present in both dictionaries</span>`
+    : '';
+  meta.innerHTML = `<span>Found <b>${countText}</b> word${results.length===1?'':'s'} ${modeText} ${parts.join(' &amp; ')}.${intersectNote}</span>${downloadBtn}`;
 
   if (results.length === 0) {
     out.innerHTML = '<div class="empty">no words match this combination</div>';
     return;
   }
 
-  out.innerHTML = results.slice(0, MAX).map(w =>
-    renderWordCard(w, DICT.get(w))
+  out.innerHTML = renderTableHeader() + results.slice(0, MAX).map(w =>
+    renderWordCard(w)
   ).join('');
   if (results.length > MAX) {
     out.innerHTML += `<div class="empty">…and more — use the JSON download for the full list</div>`;
@@ -1658,23 +2155,26 @@ function downloadPickerJSON() {
   const payload = {
     source: 'Lexical Soundings — phoneme & grapheme picker',
     generated: new Date().toISOString(),
-    variant: variant,
-    dictionary: V.sourceLabel,
     query: {
-      mode: r.mode,                                // 'all' | 'only'
-      target: r.target,                            // 'phoneme' | 'grapheme' | 'both'
-      phonemes: Array.from(picked.phonemes),
+      mode: r.mode,
+      phonemes_us: Array.from(picked.phonemes_us),
+      phonemes_uk: Array.from(picked.phonemes_uk),
       graphemes: Array.from(picked.graphemes),
     },
     count: r.results.length,
     words: r.results.map(w => {
-      const prons = DICT.get(w);
+      const us = VARIANT_DATA.us.get(w) || null;
+      const uk = VARIANT_DATA.uk.get(w) || null;
+      let status;
+      if (us && uk) {
+        status = pronsMatchAcrossVariants(us, uk) ? 'same' : 'different';
+      } else if (us) status = 'us-only';
+      else status = 'uk-only';
       return {
         word: w,
-        // Native pronunciations: ARPAbet for US, IPA for UK (with stress marks intact)
-        pronunciations: prons,
-        // Always include an IPA rendering for portability (US words get translated)
-        ipa: prons.map(pronToIPA),
+        status,
+        us: us ? { arpabet: us, ipa: us.map(p => usPronToIPA(p)) } : null,
+        uk: uk ? { ipa: uk.map(p => ukPronToIPA(p)) } : null,
       };
     }),
   };
@@ -1685,28 +2185,55 @@ function downloadPickerJSON() {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `lexical-soundings-${variant}-${stamp}.json`;
+  a.download = `lexical-soundings-${stamp}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-// Convert a stored pronunciation to IPA regardless of the source variant.
+// Convert a US (ARPAbet) pronunciation string to IPA.
+// stripStress: if true, also drop ˈ/ˌ marks — used for cross-variant comparison.
+function usPronToIPA(pron, opts = {}) {
+  const { stripStress = false } = opts;
+  return pron.split(' ').map(tok => {
+    const m = tok.match(/[0-9]$/);
+    const stress = m ? m[0] : null;
+    const base = stress ? tok.slice(0, -1) : tok;
+    // AH0 is conventionally schwa /ə/; AH1/AH2 are /ʌ/. This matters for matching UK forms.
+    let ipa;
+    if (base === 'AH' && stress === '0') ipa = 'ə';
+    else ipa = ARPA_TO_IPA[base] || base;
+    if (stripStress || !stress || stress === '0') return ipa;
+    return (stress === '1' ? 'ˈ' : 'ˌ') + ipa;
+  }).join('');
+}
+
+// UK pronunciation is already IPA; just optionally strip stress marks.
+function ukPronToIPA(pron, opts = {}) {
+  const { stripStress = false } = opts;
+  if (stripStress) return pron.replace(/[ˈˌ]/g, '').split(' ').join('');
+  return pron.split(' ').join('');
+}
+
+// Backwards-compat wrapper used by the JSON download code.
 function pronToIPA(pron) {
-  const tokens = pron.split(' ');
-  if (variant === 'us') {
-    // ARPAbet → IPA, preserve stress as ˈ/ˌ prefix on vowel
-    return tokens.map(tok => {
-      const m = tok.match(/[0-9]$/);
-      const stress = m ? m[0] : null;
-      const base = stress ? tok.slice(0, -1) : tok;
-      const ipa = ARPA_TO_IPA[base] || base;
-      return stress === '1' ? 'ˈ' + ipa : stress === '2' ? 'ˌ' + ipa : ipa;
-    }).join('');
+  return variant === 'us' ? usPronToIPA(pron) : ukPronToIPA(pron);
+}
+
+// Compare two pronunciation lists (US ARPAbet, UK IPA) for cross-variant equality.
+// Returns true if any US pronunciation matches any UK pronunciation when both are
+// normalized to stress-stripped IPA. Returns false if either list is empty.
+function pronsMatchAcrossVariants(usProns, ukProns) {
+  if (!usProns || !ukProns || !usProns.length || !ukProns.length) return false;
+  // Glyph-normalize: Britfone uses ASCII 'g', CMUdict→IPA emits 'ɡ' — same phoneme.
+  // Also normalize the rhotic glyphs: ARPA R→ɹ vs IPA r → ɹ.
+  const norm = s => s.replace(/ɡ/g, 'g').replace(/r/g, 'ɹ');
+  const usSet = new Set(usProns.map(p => norm(usPronToIPA(p, { stripStress: true }))));
+  for (const uk of ukProns) {
+    if (usSet.has(norm(ukPronToIPA(uk, { stripStress: true })))) return true;
   }
-  // UK: already IPA
-  return tokens.join('');
+  return false;
 }
 
 // =====================================================
@@ -1714,19 +2241,18 @@ function pronToIPA(pron) {
 // =====================================================
 function buildReference() {
   const grid = document.getElementById('ref-grid');
-  const groups = [
-    { title: 'Vowels', keys: V.vowels },
-    { title: 'Consonants', keys: V.consonants }
-  ];
   let html = '';
-  for (const g of groups) {
-    html += `<div style="grid-column:1/-1;font-family:'Fraunces',serif;font-style:italic;font-size:13px;color:var(--ink-soft);margin-top:4px">— ${g.title}</div>`;
-    for (const k of g.keys) {
-      const arpaLabel = variant === 'us' ? k : '';   // UK has no ARPAbet column
-      const ipaLabel = variant === 'us' ? ARPA_TO_IPA[k] : k;
-      const ex = V.refExamples[k] || '';
-      html += `<div><span class="arp">${arpaLabel}</span><span class="ipa">${ipaLabel}</span><span class="ex">${ex}</span></div>`;
-    }
+  // Two side-by-side sub-tables: US and UK
+  html += `<div style="grid-column:1/-1;font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--ink);margin-top:4px;border-bottom:1px dotted var(--rule);padding-bottom:4px">🇺🇸 US — CMUdict (ARPAbet ↔ IPA)</div>`;
+  for (const k of [...VARIANTS.us.vowels, ...VARIANTS.us.consonants]) {
+    const ex = VARIANTS.us.refExamples[k] || '';
+    html += `<div><span class="arp">${k}</span><span class="ipa">${ARPA_TO_IPA[k]}</span><span class="ex">${ex}</span></div>`;
+  }
+  html += `<div style="grid-column:1/-1;font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:var(--ink);margin-top:14px;border-bottom:1px dotted var(--rule);padding-bottom:4px">🇬🇧 UK — Britfone / RP (IPA, with ARPA equivalent where one exists)</div>`;
+  for (const k of [...VARIANTS.uk.vowels, ...VARIANTS.uk.consonants]) {
+    const arpa = UK_TO_ARPA[k] || '';
+    const ex = VARIANTS.uk.refExamples[k] || '';
+    html += `<div><span class="arp">${arpa}</span><span class="ipa">${k}</span><span class="ex">${ex}</span></div>`;
   }
   grid.innerHTML = html;
 }
@@ -1741,13 +2267,13 @@ function rerenderActiveTab() {
   else if (active === 'pattern') doPattern(document.getElementById('pat-target').value, document.getElementById('pat-mode').value, document.getElementById('pat-input').value);
   else if (active === 'rhyme') doRhyme(document.getElementById('rhyme-input').value, document.getElementById('rhyme-mode').value);
   else if (active === 'picker') {
-    // Rebuild chip labels for current notation (US can switch ARPA↔IPA)
-    document.querySelectorAll('#palette-vowels .chip, #palette-consonants .chip').forEach(c => {
+    // Rebuild US phoneme chip inner HTML for current notation (US can switch ARPA↔IPA).
+    // UK chips are notation-invariant (always IPA) so they don't need re-rendering.
+    document.querySelectorAll('#palette-us-vowels .chip, #palette-us-consonants .chip').forEach(c => {
       const v = c.dataset.value;
-      const label = V.chipLabel(v, notation);
-      const hint = V.chipHint(v, notation);
-      const hintHtml = hint ? `<span class="ipa-hint">${hint}</span>` : '';
-      c.innerHTML = `${label}${hintHtml}`;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = phonemeChipHTML(v, 'us');
+      c.innerHTML = tmp.firstChild.innerHTML;
     });
     doPicker();
   }
@@ -1769,36 +2295,10 @@ function wireUI() {
   });
 
   // Variant toggle
-  document.querySelectorAll('#variantToggle button').forEach(b => {
-    b.addEventListener('click', () => {
-      const newVariant = b.dataset.variant;
-      if (newVariant === variant) return;
-      document.querySelectorAll('#variantToggle button').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      // Switching variant: clear picker selections (phoneme symbols differ between variants)
-      picked.phonemes.clear();
-      picked.graphemes.clear();
-      selectVariant(newVariant);
-      // Rebuild the picker palettes for the new variant's phoneme inventory
-      buildPalettes();
-      updatePickerCounts();
-      // Update the placeholder text on the sounds input to reflect notation
-      const soundsInput = document.getElementById('sounds-input');
-      if (variant === 'us') {
-        soundsInput.placeholder = 'e.g. K AE T  (or in IPA: kæt)';
-      } else {
-        soundsInput.placeholder = 'e.g. k æ t  (RP IPA, space-separated or run-on)';
-      }
-      rerenderActiveTab();
-    });
-  });
-
-  // Notation toggle
+  // Notation toggle (US-only — UK is always IPA)
   document.querySelectorAll('#notationToggle button').forEach(b => {
     b.addEventListener('click', () => {
-      if (b.disabled) return;
       const m = b.dataset.mode;
-      if (!V.notationModes.includes(m)) return;
       document.querySelectorAll('#notationToggle button').forEach(x => x.classList.remove('active'));
       b.classList.add('active');
       notation = m;
@@ -1842,24 +2342,75 @@ function wireUI() {
   const rhymeHandler = debounce(() => doRhyme(rhymeInput.value, rhymeMode.value), 200);
   rhymeInput.addEventListener('input', rhymeHandler);
   rhymeMode.addEventListener('change', rhymeHandler);
+  // Rhyme variant selector (per-tab — only place variant matters)
+  const rhymeVariant = document.getElementById('rhyme-variant');
+  if (rhymeVariant) rhymeVariant.addEventListener('change', rhymeHandler);
 
   // Picker
   buildPalettes();
   updatePickerCounts();
   document.getElementById('pick-mode').addEventListener('change', doPicker);
-  document.getElementById('pick-target').addEventListener('change', doPicker);
   document.getElementById('pick-clear').addEventListener('click', () => {
-    picked.phonemes.clear();
+    picked.phonemes_us.clear();
+    picked.phonemes_uk.clear();
     picked.graphemes.clear();
+    mirrored.phonemes_us.clear();
+    mirrored.phonemes_uk.clear();
     refreshPaletteChips();
     doPicker();
   });
-  document.getElementById('pick-vowels').addEventListener('click', () => {
-    // Quick-select: all vowel phonemes for current variant + vowel letters
-    picked.phonemes.clear();
-    picked.graphemes.clear();
-    V.vowels.forEach(p => picked.phonemes.add(p));
-    ['a','e','i','o','u','y'].forEach(l => picked.graphemes.add(l));
+  document.getElementById('pick-vowels-us').addEventListener('click', () => {
+    picked.phonemes_us.clear();
+    mirrored.phonemes_us.clear();
+    VARIANTS.us.vowels.forEach(p => picked.phonemes_us.add(p));
+    // If mirror is on, also propagate
+    if (mirrorEnabled) {
+      // Clear UK mirrored picks first, then re-mirror
+      for (const v of [...mirrored.phonemes_uk]) {
+        picked.phonemes_uk.delete(v);
+        mirrored.phonemes_uk.delete(v);
+      }
+      for (const v of VARIANTS.us.vowels) applyMirror('phoneme-us', v, true);
+    }
+    refreshPaletteChips();
+    doPicker();
+  });
+  document.getElementById('pick-vowels-uk').addEventListener('click', () => {
+    picked.phonemes_uk.clear();
+    mirrored.phonemes_uk.clear();
+    VARIANTS.uk.vowels.forEach(p => picked.phonemes_uk.add(p));
+    if (mirrorEnabled) {
+      for (const v of [...mirrored.phonemes_us]) {
+        picked.phonemes_us.delete(v);
+        mirrored.phonemes_us.delete(v);
+      }
+      for (const v of VARIANTS.uk.vowels) applyMirror('phoneme-uk', v, true);
+    }
+    refreshPaletteChips();
+    doPicker();
+  });
+  document.getElementById('pick-mirror').addEventListener('click', (e) => {
+    mirrorEnabled = !mirrorEnabled;
+    e.currentTarget.dataset.on = mirrorEnabled ? 'true' : 'false';
+    if (mirrorEnabled) {
+      // Turning ON: propagate existing manual selections to their mirror partners.
+      // Manual = currently-picked items NOT already in mirrored.
+      const usManual = Array.from(picked.phonemes_us).filter(v => !mirrored.phonemes_us.has(v));
+      const ukManual = Array.from(picked.phonemes_uk).filter(v => !mirrored.phonemes_uk.has(v));
+      for (const v of usManual) applyMirror('phoneme-us', v, true);
+      for (const v of ukManual) applyMirror('phoneme-uk', v, true);
+    } else {
+      // Turning OFF: remove all mirror-only selections (they were visual-only;
+      // user wouldn't have picked them otherwise).
+      for (const v of [...mirrored.phonemes_us]) {
+        picked.phonemes_us.delete(v);
+        mirrored.phonemes_us.delete(v);
+      }
+      for (const v of [...mirrored.phonemes_uk]) {
+        picked.phonemes_uk.delete(v);
+        mirrored.phonemes_uk.delete(v);
+      }
+    }
     refreshPaletteChips();
     doPicker();
   });
